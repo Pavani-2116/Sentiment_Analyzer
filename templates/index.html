@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sentiment Analyzer</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/3209/3209265.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap & Fonts -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #e0f7fa, #f1f8e9);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 2rem;
+            width: 100%;
+            max-width: 600px;
+            background: #fff;
+            animation: slideUp 0.5s ease-in-out;
+        }
+
+        @keyframes slideUp {
+            0% { transform: translateY(50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .btn-primary {
+            background-color: #00796b;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+        }
+
+        .btn-primary:hover {
+            background-color: #004d40;
+        }
+
+        textarea {
+            border-radius: 12px;
+            resize: none;
+        }
+
+        #result {
+            font-weight: bold;
+        }
+
+        #emoji {
+            font-size: 2rem;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card text-center">
+        <h2 class="mb-4">🔍 Sentiment Analyzer</h2>
+        <form id="sentimentForm">
+            <textarea name="text" class="form-control mb-3" rows="4" placeholder="Type your message here..." required></textarea>
+            <button type="submit" class="btn btn-primary w-100">Analyze Sentiment</button>
+        </form>
+
+        <div id="result" class="mt-4 text-success fs-5"></div>
+        <div id="message" class="mt-2 text-muted"></div>
+        <div id="emoji"></div>
+    </div>
+
+    <script>
+        document.getElementById('sentimentForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                const result = data.result;
+                const resultElement = document.getElementById('result');
+                const messageElement = document.getElementById('message');
+                const emojiElement = document.getElementById('emoji');
+
+                resultElement.textContent = `Prediction: ${result}`;
+                
+                if (result.includes('Positive')) {
+                    messageElement.textContent = "🎉 Great! This seems like a positive and happy message!";
+                    emojiElement.textContent = "😊";
+                    resultElement.className = "mt-4 text-success fs-5";
+                } else if (result.includes('Negative')) {
+                    messageElement.textContent = "😟 This message might indicate negative feelings or concerns.";
+                    emojiElement.textContent = "😢";
+                    resultElement.className = "mt-4 text-danger fs-5";
+                } else {
+                    messageElement.textContent = "😐 The message appears neutral in tone.";
+                    emojiElement.textContent = "😐";
+                    resultElement.className = "mt-4 text-secondary fs-5";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                resultElement.textContent = "Error occurred. Try again!";
+                resultElement.className = "mt-4 text-danger fs-5";
+            });
+        });
+    </script>
+
+</body>
+</html>
